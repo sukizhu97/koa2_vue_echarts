@@ -1,4 +1,4 @@
-// 入口
+// 入口: 
 // 1. 创建koa的实例对象
 const Koa = require('koa')
 const app = new Koa()
