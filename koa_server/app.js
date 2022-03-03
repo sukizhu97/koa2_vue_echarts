@@ -14,4 +14,4 @@ const app = new Koa()
   const respDataMiddleware = require('./middleware/koa_response_data')
   app.use(respDataMiddleware)
 // 3. 绑定端口号
-app.listen('8400')
+app.listen('8888')

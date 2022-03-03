@@ -3,9 +3,10 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from 'axios'
-
+// 入口文件要把less文件引入
+import './assets/css/global.less'
 // 请求基准路径的配置
-axios.defaults.baseURL = 'http://127.0.0.1:8081/api/'
+axios.defaults.baseURL = 'http://127.0.0.1:8888/api/'
 
 // axios 挂载到Vue的原型对象上
 Vue.prototype.$http = axios
