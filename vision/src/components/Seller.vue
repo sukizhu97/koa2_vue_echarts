@@ -1,7 +1,7 @@
 <!-- 商家销量统计横向柱状图 -->
 <template>
   <div class="com-container">
-    <!-- 真正显示图表的div -->
+    <!-- 真正显示图表div -->
     <div class="com-chart" ref="seller_ref"></div>
   </div>
 </template>
