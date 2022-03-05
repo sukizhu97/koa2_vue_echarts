@@ -5,6 +5,7 @@ import store from './store'
 import axios from 'axios'
 // 入口文件要把less文件引入
 import './assets/css/global.less'
+import './assets/font/iconfont.css'
 // 请求基准路径的配置
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/'
 
