@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <button id="connect">link</button>
+  <button id="send" disabled='true'>send</button>
+  从服务端接收的数据如下:<br>
+  <span id="recv"></span>
+  <script>
+    var connect = document.querySelector('#connect')
+    var send = document.querySelector('#send')
+    var recive = document.querySelector('#recv')
+    let ws = null
+    connect.onclick = function () {
+      ws = new WebSocket('ws://localhost:9998') // 这里ws是局部的所以要在全局声明let ws = null
+      ws.onopen = () => {
+        console.log('连接服务器成功');
+        send.disabled = false // 禁用send按钮
+      }
+      ws.onclose = () => {
+        console.log('连接服务器失败');
+        send.disabled = false
+      }
+      ws.onmessage = msg => {
+        console.log('接收到了服务端发送来的数据');
+        console.log(msg);
+        // msg中的data就是后端返回给的数据
+        recv.innerHTML = msg.data
+      }
+    }
+    send.onclick = function () {
+      ws.send(JSON.stringify({
+        action: 'fullScreen',
+        socketType: 'fullScreen',
+        charName: 'trend',
+        value: true
+      }))
+    }
+  </script>
+</body>
+
+</html>
