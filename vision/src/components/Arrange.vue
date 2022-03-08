@@ -17,6 +17,9 @@ export default {
       timerId: null
     }
   },
+  created () {
+    this.$socket.registerCallBack('arrageData', this.getData)
+  },
   // 计算属性 类似于 data 概念
   computed: {},
   methods: {
@@ -36,7 +39,7 @@ export default {
           containLabel: true
         },
         tooltip: {
-          trigger: 'axis'
+          show: true
         },
         xAxis: {
           type: 'category'
@@ -54,9 +57,7 @@ export default {
         this.startInterval()
       })
     },
-    async getData () {
-      const { data: ret } = await this.$http.get('rank')
-      console.log(ret)
+    getData (ret) {
       this.allData = ret
       // 从大到小排序
       this.allData.sort((a, b) => {
@@ -157,12 +158,18 @@ export default {
   // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'arrageData',
+      chartName: 'rank', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
   destroyed () {
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('arrangeData')
     // 停止定时器
     clearInterval(this.timerId)
   }

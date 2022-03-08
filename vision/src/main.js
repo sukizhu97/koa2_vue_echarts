@@ -6,6 +6,10 @@ import axios from 'axios'
 // 入口文件要把less文件引入
 import './assets/css/global.less'
 import './assets/font/iconfont.css'
+import SocketService from '@/utils/socket_service'
+SocketService.Instance.connect()
+// 挂载socket实例对象
+Vue.prototype.$socket = SocketService.Instance
 // 请求基准路径的配置
 axios.defaults.baseURL = 'http://127.0.0.1:8888/api/'
 
@@ -19,5 +23,5 @@ Vue.config.productionTip = false
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: (h) => h(App)
 }).$mount('#app')

@@ -17,9 +17,18 @@ export default {
       timerId: null // 定时器标识
     }
   },
+  created () {
+    // 组件创建完成之后  注册组件的回调函数
+    this.$socket.registerCallBack('sellerData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'sellerData',
+      chartName: 'seller', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     // 在界面完成加载的时候， 主动进行屏幕的适配
     this.screenAdapter('resize', this.screenAdapter)
@@ -28,6 +37,7 @@ export default {
     clearInterval(this.timerId)
     // 销毁的时候取消监听器
     window.removeEventListener()
+    this.$socket.unRegisterCallBack('sellerData')
   },
   methods: {
     // 初始化echart对象
@@ -105,12 +115,12 @@ export default {
       })
     },
     // 获取服务器数据
-    async getData () {
+    getData (ret) {
       // 获取的是http://127.0.0.1:8888/api/seller 地址里面的数据
       // 但是不需要写上面这么长一段 因为我们在main.js中已经配置了基本的URL
       // const ret = await this.$http.get('seller')
       // 通过解构赋值 取ret中的data出来
-      const { data: ret } = await this.$http.get('seller')
+      // const { data: ret } = await this.$http.get('seller')
       console.log(ret)
       this.allData = ret
       // 数组排序 后方的回调函数是说明从小到大 or 从大到小

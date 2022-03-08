@@ -19,6 +19,10 @@ export default {
       mapData: {} // 获取省份信息的缓存
     }
   },
+  created () {
+    // 组件创建完成之后  注册组件的回调函数
+    this.$socket.registerCallBack('mapData', this.getData)
+  },
   // 计算属性 类似于 data 概念
   computed: {},
   // 方法集合
@@ -79,8 +83,7 @@ export default {
         this.chartInstance.setOption(changeOption)
       })
     },
-    async getData () {
-      const { data: ret } = await this.$http.get('map')
+    getData (ret) {
       this.allData = ret
       console.log(ret)
       this.updateData()
@@ -147,12 +150,18 @@ export default {
   // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'mapData',
+      chartName: 'map', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter() // 第一次显示的时候主动调用函数 使其能适配屏幕
   },
   destroyed () {
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('mapData')
   } // 生命周期 - 销毁完成
 }
 </script>

@@ -16,9 +16,10 @@ module.exports.listen = ()=>{
       console.log('客户端发送数据给服务端了' + msg);
       // 让字符串转化为json类型
       let payload = JSON.parse(msg)
+      console.log(payload);
       const aciton = payload.action
       if( aciton === 'getData'){
-        let filePath = '../data/' + payload.charName + '.json'
+        let filePath = '../data/' + payload.chartName + '.json'
         filePath = path.join(__dirname,filePath)
         const ret = await fileUtils.getFileJsonData(filePath)
         payload.data = ret // 服务端获取的数据之上增加data字段

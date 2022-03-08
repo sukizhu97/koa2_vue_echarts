@@ -35,15 +35,27 @@ export default {
       titleFontSize: 0 // 标题的字体大小
     }
   },
+  created () {
+    // 组件创建完成之后  注册组件的回调函数
+    this.$socket.registerCallBack('trendData', this.getData)
+  },
   mounted () {
     this.initChart()
-    this.getData()
+    // 发送数据给服务器
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'trendData',
+      chartName: 'trend', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenApapter)
     // 第一次调用的时候主动触发
     this.screenApapter()
   },
   destroyed () {
     window.removeEventListener('resize', this.screenApapter)
+    // 组件销毁的时候回调函数的取消
+    this.$socket.unregisterCallBack('trendData')
   },
   computed: {
     selectType () {
@@ -104,8 +116,9 @@ export default {
       }
       this.chartInstance.setOption(initOption)
     },
-    async getData () {
-      const { data: ret } = await this.$http.get('trend')
+    async getData (ret) {
+      // ret是服务端发给客户端的图表数据
+      // const { data: ret } = await this.$http.get('trend')
       this.allData = ret
       console.log(ret)
       this.updateChart()
@@ -171,6 +184,7 @@ export default {
     },
     screenApapter () {
       this.titleFontSize = (this.$refs.trend_ref.offsetWidth / 100) * 3.6
+      console.log(this.titleFontSize)
       const adapterOpter = {
         legend: {
           itemWidth: this.titleFontSize,

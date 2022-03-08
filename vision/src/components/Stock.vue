@@ -16,6 +16,10 @@ export default {
       timerId: null
     }
   },
+  created () {
+    // 组件创建完成之后  注册组件的回调函数
+    this.$socket.registerCallBack('stockData', this.getData)
+  },
   // 计算属性 类似于 data 概念
   computed: {},
 
@@ -37,8 +41,8 @@ export default {
         this.startInterval()
       })
     },
-    async getData () {
-      const { data: ret } = await this.$http.get('stock')
+    getData (ret) {
+      // const { data: ret } = await this.$http.get('stock')
       this.allData = ret
       console.log(ret)
       this.updateChart()
@@ -65,11 +69,10 @@ export default {
       const seriesArr = showData.map((item, index) => {
         return {
           type: 'pie',
-          radius: [110, 100], // 圆环
           center: centerArr[index],
           data: [
             {
-              name: item.name + '\n' + item.sales,
+              name: item.name + '\n\n' + item.sales,
               value: item.sales,
               itemStyle: {
                 // 渐变
@@ -106,7 +109,7 @@ export default {
     },
     screenAdapter () {
       const titleFontSize = (this.$refs.stock_ref.offsetWidth / 100) * 3.6
-      const innerRadius = titleFontSize * 2
+      const innerRadius = titleFontSize * 2.5
       const outterRadius = titleFontSize * 1.125
       const adapterOpter = {
         title: {
@@ -171,11 +174,18 @@ export default {
   // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'stockData',
+      chartName: 'stock', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
+    this.screenAdapter()
   },
   destroyed () {
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('stockData')
     clearInterval(this.timerId)
   } // 生命周期 - 销毁完成
 }

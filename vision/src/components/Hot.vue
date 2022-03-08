@@ -21,6 +21,10 @@ export default {
       // titleFontSize: 0
     }
   },
+  created () {
+    // 组件创建完成之后  注册组件的回调函数
+    this.$socket.registerCallBack('hotData', this.getData)
+  },
   computed: {
     catName () {
       if (!this.allData) {
@@ -84,8 +88,7 @@ export default {
       }
       this.chartInstance.setOption(initOption)
     },
-    async getData () {
-      const { data: ret } = await this.$http.get('hotproduct')
+    getData (ret) {
       this.allData = ret
       console.log(this.allData)
       this.updateData()
@@ -127,8 +130,8 @@ export default {
           }
         },
         legend: {
-          itemWidth: titleFontSize / 2,
-          itemHeight: titleFontSize / 2,
+          itemWidth: titleFontSize,
+          itemHeight: titleFontSize,
           itemGap: titleFontSize / 2,
           textStyle: {
             fontSzie: titleFontSize / 2
@@ -161,12 +164,18 @@ export default {
   // 生命周期 - 挂载完成（可以访问 DOM 元素）
   mounted () {
     this.initChart()
-    this.getData()
+    this.$socket.send({
+      action: 'getData',
+      socketType: 'hotData',
+      chartName: 'hotproduct', // 读取后端哪个json文件
+      value: ''
+    })
     window.addEventListener('resize', this.screenAdapter)
     this.screenAdapter()
   },
   destroyed () {
     window.removeEventListener('resize', this.screenAdapter)
+    this.$socket.unRegisterCallBack('hotData')
   } // 生命周期 - 销毁完成
 }
 </script>
