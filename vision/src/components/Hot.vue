@@ -12,13 +12,24 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { getThemeValue } from '../utils/theme_utils.js'
 export default {
   data () {
     return {
       chartInstance: null,
       allData: null,
-      currentIndex: 0 // 当前展示的一级数据
-      // titleFontSize: 0
+      currentIndex: 0, // 当前展示的一级数据
+      titleFontSize: 0
+    }
+  },
+  watch: {
+    theme () {
+      console.log('主题切换了')
+      this.chartInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateData()
     }
   },
   created () {
@@ -33,15 +44,17 @@ export default {
         return this.allData[this.currentIndex].name
       }
     },
+    ...mapState(['theme']),
     comStyle () {
       return {
-        // fontSize: this.titleFontSize + 'px'
+        fontSize: this.titleFontSize + 'px',
+        color: getThemeValue(this.theme).titleColor
       }
     }
   },
   methods: {
     initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.hot_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.hot_ref, this.theme)
       const initOption = {
         title: {
           text: '┃ 热销商品占比',
@@ -122,29 +135,30 @@ export default {
       this.chartInstance.setOption(dataOption)
     },
     screenAdapter () {
-      const titleFontSize = (this.$refs.hot_ref.offsetWidth / 100) * 3.6
+      this.titleFontSize = (this.$refs.hot_ref.offsetWidth / 100) * 3.6
       const adapterOption = {
         title: {
           textStyle: {
-            fontSize: titleFontSize
+            fontSize: this.titleFontSize
           }
         },
         legend: {
-          itemWidth: titleFontSize,
-          itemHeight: titleFontSize,
-          itemGap: titleFontSize / 2,
+          itemWidth: this.titleFontSize,
+          itemHeight: this.titleFontSize,
+          itemGap: this.titleFontSize / 2,
           textStyle: {
-            fontSzie: titleFontSize / 2
+            fontSize: this.titleFontSize / 2
           }
         },
         series: [
           {
-            radius: titleFontSize * 6.5,
+            radius: this.titleFontSize * 4.5,
             center: ['50%', '60%']
           }
         ]
       }
       this.chartInstance.setOption(adapterOption)
+      this.chartInstance.resize()
     },
     toLeft () {
       this.currentIndex--

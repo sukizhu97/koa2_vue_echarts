@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   data () {
     return {
@@ -15,6 +16,18 @@ export default {
       currentPage: 1, // 当前显示的页数
       totalPage: 0, // 一共多少页
       timerId: null // 定时器标识
+    }
+  },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme () {
+      console.log('主题切换了')
+      this.chartInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateChart()
     }
   },
   created () {
@@ -42,7 +55,7 @@ export default {
   methods: {
     // 初始化echart对象
     initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.seller_ref, 'chalk') // 使用refs拿到dom元素
+      this.chartInstance = this.$echarts.init(this.$refs.seller_ref, this.theme) // 使用refs拿到dom元素
       // 对图表初始化的控制 拿出与数据相关的
       const initOption = {
         title: {

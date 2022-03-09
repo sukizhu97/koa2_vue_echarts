@@ -28,7 +28,7 @@ module.exports.listen = ()=>{
         // 原封不动的转发数据转发给处于连接状态的客户端状态
         // wss.clients  表示所有客户端的连接
         wss.clients.forEach(client=>{
-          client.send(msg)
+          client.send(JSON.stringify(payload))
         })
       }
       // client.send('hello Socket from backend')

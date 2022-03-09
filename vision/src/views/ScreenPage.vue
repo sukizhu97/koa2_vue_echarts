@@ -2,11 +2,11 @@
   <div class="screen-container" :style="containerStyle">
     <header class="screen-header">
       <div>
-        <img src="../../public/static/img/header_border_dark.png" alt="" />
+        <img :src="headerSrc" alt="" />
       </div>
       <span class="title">电商平台实时监控系统</span>
       <div class="title-right">
-        <img src="../../public/static/img/qiehuan_dark.png" class="qiehuan" />
+        <img :src="themeSrc" class="qiehuan" @click="handleChangeTheme" />
         <span class="datetime">2049-01-01 00:00:00</span>
       </div>
     </header>
@@ -125,6 +125,8 @@ import Arrange from '@/components/Arrange.vue'
 import Seller from '@/components/Seller.vue'
 import Stock from '@/components/Stock.vue'
 import Trend from '@/components/Trend.vue'
+import { mapState } from 'vuex'
+import { getThemeValue } from '../utils/theme_utils.js'
 export default {
   components: {
     Hot,
@@ -134,8 +136,16 @@ export default {
     Stock,
     Trend
   },
-  created () {},
-  destroyed () {},
+  created () {
+    // 注册接收到数据的回调函数
+    this.$socket.registerCallBack('fullScreen', this.recvData)
+    this.$socket.registerCallBack('themeChange', this.recvThemeChange)
+  },
+  destroyed () {
+    // 取消注册
+    this.$socket.unRegisterCallBack('fullScreen')
+    this.$socket.UnRegisterCallBack('themeChange')
+  },
   data () {
     return {
       // 定义全屏状态的数据
@@ -150,17 +160,65 @@ export default {
     }
   },
   methods: {
-    changeSize (chartName) {
-      // 1. 改变 fullScreenStatus的数据
-      this.fullScreenStatus[chartName] = !this.fullScreenStatus[chartName]
-      // 还要有延迟
-      // 2. 需要调用每一个图表组件的screenAdapter方法
+    // 修改vueX中的数据
+    handleChangeTheme () {
+      // this.$store.commit('changeTheme')
+      // 发送数据给服务端
+      this.$socket.send({
+        action: 'themeChange',
+        socketType: 'themeChange',
+        chartName: '',
+        value: ''
+      })
+    },
+    recvThemeChange () {
+      this.$store.commit('changeTheme')
+    },
+    // 接收到全屏数据后的处理
+    recvData (data) {
+      // 先取出哪一个图表需要进行切换 切换成什么状态
+      const chartName = data.chartName
+      const targetValue = data.value
+      this.fullScreenStatus[chartName] = targetValue
       this.$nextTick(() => {
         this.$refs[chartName].screenAdapter()
       })
+    },
+    changeSize (chartName) {
+      // // 1. 改变 fullScreenStatus的数据
+      // this.fullScreenStatus[chartName] = !this.fullScreenStatus[chartName]
+      // // 还要有延迟
+      // // 2. 需要调用每一个图表组件的screenAdapter方法
+      // this.$nextTick(() => {
+      //   this.$refs[chartName].screenAdapter()
+      // })
+
+      // 数据发给服务端
+      const targetValue = !this.fullScreenStatus[chartName]
+      // console.log(targetValue)
+      this.$socket.send({
+        action: 'fullScreen',
+        socketType: 'fullScreen',
+        chartName: chartName,
+        value: targetValue
+      })
     }
   },
-  computed: {}
+  computed: {
+    headerSrc () {
+      return '/static/img/' + getThemeValue(this.theme).headerBorderSrc
+    },
+    themeSrc () {
+      return '/static/img/' + getThemeValue(this.theme).themeSrc
+    },
+    containerStyle () {
+      return {
+        backgroundColor: getThemeValue(this.theme).backgroundColor,
+        color: getThemeValue(this.theme).titleColor
+      }
+    },
+    ...mapState(['theme'])
+  }
 }
 </script>
 <style lang="less" scoped>

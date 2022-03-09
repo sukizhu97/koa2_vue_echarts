@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
   components: {},
   data () {
@@ -21,11 +22,22 @@ export default {
     this.$socket.registerCallBack('stockData', this.getData)
   },
   // 计算属性 类似于 data 概念
-  computed: {},
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme () {
+      console.log('主题切换了')
+      this.chartInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateChart()
+    }
+  },
 
   methods: {
     initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.stock_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.stock_ref, this.theme)
       const initOption = {
         title: {
           text: '┃ 库存与销量分析',

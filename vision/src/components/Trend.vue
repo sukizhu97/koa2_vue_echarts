@@ -8,7 +8,7 @@
         :style="comStyle"
         >&#xe6eb;</span
       >
-      <div class="select-con" v-show="showChoice">
+      <div :class="[select - con, select_con]" v-show="showChoice">
         <div
           class="select-item"
           v-for="item in selectType"
@@ -25,6 +25,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+import { getThemeValue } from '../utils/theme_utils.js'
 export default {
   data () {
     return {
@@ -33,6 +35,15 @@ export default {
       showChoice: false, // 是否显示可选项
       choiceType: 'map',
       titleFontSize: 0 // 标题的字体大小
+    }
+  },
+  watch: {
+    theme () {
+      console.log('主题切换了')
+      this.chartInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateChart()
     }
   },
   created () {
@@ -48,16 +59,17 @@ export default {
       chartName: 'trend', // 读取后端哪个json文件
       value: ''
     })
-    window.addEventListener('resize', this.screenApapter)
+    window.addEventListener('resize', this.screenAdapter)
     // 第一次调用的时候主动触发
-    this.screenApapter()
+    this.screenAdapter()
   },
   destroyed () {
-    window.removeEventListener('resize', this.screenApapter)
+    window.removeEventListener('resize', this.screenAdapter)
     // 组件销毁的时候回调函数的取消
     this.$socket.unregisterCallBack('trendData')
   },
   computed: {
+    ...mapState(['theme']),
     selectType () {
       // 呈现什么类型表格
       if (!this.allData) {
@@ -79,16 +91,22 @@ export default {
     // 设置给标题的样式
     comStyle () {
       return {
-        fontSize: this.titleFontSize + 'px'
+        fontSize: this.titleFontSize + 'px',
+        color: getThemeValue(this.theme).titleColor
       }
     },
     marginStyle () {
       return { marginLeft: this.titleFontSize + 'px' }
+    },
+    select_con () {
+      return {
+        backgroundColor: getThemeValue(this.theme).backgroundColor
+      }
     }
   },
   methods: {
     initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.trend_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.trend_ref, this.theme)
       const initOption = {
         xAxis: {
           type: 'category',
@@ -182,9 +200,8 @@ export default {
       }
       this.chartInstance.setOption(dataOption)
     },
-    screenApapter () {
+    screenAdapter () {
       this.titleFontSize = (this.$refs.trend_ref.offsetWidth / 100) * 3.6
-      console.log(this.titleFontSize)
       const adapterOpter = {
         legend: {
           itemWidth: this.titleFontSize,

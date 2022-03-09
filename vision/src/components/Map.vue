@@ -5,12 +5,10 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import axios from 'axios'
 import { getProvinceMapInfo } from '../utils/map_utils'
 export default {
-  // import 引入的组件需要注入到对象中才能使用
-  components: {},
-  props: {},
   data () {
     // 这里存放数据
     return {
@@ -24,11 +22,22 @@ export default {
     this.$socket.registerCallBack('mapData', this.getData)
   },
   // 计算属性 类似于 data 概念
-  computed: {},
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme () {
+      console.log('主题切换了')
+      this.chartInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateData()
+    }
+  },
   // 方法集合
   methods: {
     async initChart () {
-      this.chartInstance = this.$echarts.init(this.$refs.map_ref, 'chalk')
+      this.chartInstance = this.$echarts.init(this.$refs.map_ref, this.theme)
       // 获取中国地图的矢量数据 现在的数据并不是位于后台 所以不能使用this.$http
       // 直接使用axios
       const ret = await axios.get('http://localhost:8080/static/map/china.json')

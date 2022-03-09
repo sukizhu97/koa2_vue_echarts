@@ -5,26 +5,37 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 export default {
-  components: {},
-  props: {},
   data () {
     // 这里存放数据
     return {
+      charInstance: null,
       allData: null,
       startValue: 0, // 区域缩放的起点值
       endValue: 9, // 区域缩放的终点值
       timerId: null
     }
   },
+  computed: {
+    ...mapState(['theme'])
+  },
+  watch: {
+    theme () {
+      console.log('1111')
+      console.log('主题切换了')
+      this.charInstance.dispose() // 销毁当前图表
+      this.initChart() // 重新以最新的主题名称初始化
+      this.screenAdapter() // 完成屏幕的适配
+      this.updateData()
+    }
+  },
   created () {
     this.$socket.registerCallBack('arrageData', this.getData)
   },
-  // 计算属性 类似于 data 概念
-  computed: {},
   methods: {
     initChart () {
-      this.charInstance = this.$echarts.init(this.$refs.rank_ref, 'chalk')
+      this.charInstance = this.$echarts.init(this.$refs.rank_ref, this.theme)
       const initOption = {
         title: {
           text: '┃ 地区销售排行',
